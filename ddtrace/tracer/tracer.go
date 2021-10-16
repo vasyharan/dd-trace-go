@@ -356,6 +356,9 @@ func (t *tracer) pushTrace(trace []*span) {
 	}
 	select {
 	case t.out <- trace:
+		for _, s := range trace {
+			log.Debug("pushTrace %#v", s)
+		}
 	default:
 		log.Error("payload queue full, dropping %d traces", len(trace))
 	}

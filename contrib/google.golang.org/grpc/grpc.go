@@ -15,6 +15,7 @@ import (
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/ext"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
+	"gopkg.in/DataDog/dd-trace-go.v1/internal/log"
 
 	context "golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
@@ -54,5 +55,6 @@ func finishWithError(span ddtrace.Span, err error, cfg *config) {
 	if cfg.noDebugStack {
 		finishOptions = append(finishOptions, tracer.NoDebugStack())
 	}
+	log.Debug("contrib/google.golang.org/grpc: span.Finish (unary): err=%#v", err)
 	span.Finish(finishOptions...)
 }

@@ -76,7 +76,7 @@ func StreamClientInterceptor(opts ...Option) grpc.StreamClientInterceptor {
 	for _, fn := range opts {
 		fn(cfg)
 	}
-	log.Debug("contrib/google.golang.org/grpc: Configuring StreamClientInterceptor: %#v", cfg)
+	log.Debug("contrib/google.golang.org/grpc: Configuring StreamClientInterceptor (haran): %#v", cfg)
 	return func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, method string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 		var methodKind string
 		if desc != nil {
@@ -102,6 +102,7 @@ func StreamClientInterceptor(opts ...Option) grpc.StreamClientInterceptor {
 					return err
 				})
 			if err != nil {
+				log.Debug("contrib/google.golang.org/grpc: Finishing span (stream init error): %#v", span)
 				finishWithError(span, err, cfg)
 				return nil, err
 			}
@@ -114,6 +115,7 @@ func StreamClientInterceptor(opts ...Option) grpc.StreamClientInterceptor {
 
 			go func() {
 				<-stream.Context().Done()
+				log.Debug("contrib/google.golang.org/grpc: Finishing span (stream): %#v", span)
 				finishWithError(span, stream.Context().Err(), cfg)
 			}()
 		} else {
@@ -147,12 +149,13 @@ func UnaryClientInterceptor(opts ...Option) grpc.UnaryClientInterceptor {
 	for _, fn := range opts {
 		fn(cfg)
 	}
-	log.Debug("contrib/google.golang.org/grpc: Configuring UnaryClientInterceptor: %#v", cfg)
+	log.Debug("contrib/google.golang.org/grpc: Configuring UnaryClientInterceptor (haran): %#v", cfg)
 	return func(ctx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		span, _, err := doClientRequest(ctx, cfg, method, methodKindUnary, opts,
 			func(ctx context.Context, opts []grpc.CallOption) error {
 				return invoker(ctx, method, req, reply, cc, opts...)
 			})
+		log.Debug("contrib/google.golang.org/grpc: finishWithError (unary): %#v", span)
 		finishWithError(span, err, cfg)
 		return err
 	}
